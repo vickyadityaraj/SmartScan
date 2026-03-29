@@ -1,14 +1,14 @@
 'use client'
 
 import { useState } from 'react'
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
+import { useRouter } from 'next/navigation'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Button } from '@/components/ui/button'
-import { loginAction, signupAction, verifyOtpAction } from './actions'
 import { toast } from 'sonner'
-import { Loader2, ScanLine, Mail, ArrowRight, ShieldCheck, UserPlus, LogIn, Lock } from 'lucide-react'
-import { useRouter } from 'next/navigation'
+import { ScanLine, Mail, Lock, LogIn, UserPlus, ShieldCheck, Loader2 } from 'lucide-react'
+import { loginAction, signupAction, verifyOtpAction } from './actions'
 
 export default function LoginPage() {
   const [mode, setMode] = useState<'login' | 'signup' | 'otp'>('login')
@@ -207,31 +207,24 @@ export default function LoginPage() {
             </form>
           )}
         </CardContent>
-        
-        <CardFooter className="flex flex-col gap-4 bg-zinc-50/50 dark:bg-zinc-900/50 px-8 py-6 mt-4 border-t border-zinc-100 dark:border-zinc-800">
-          {mode === 'login' ? (
-            <p className="text-sm text-center text-zinc-500">
-              New user?{' '}
-              <button 
-                type="button" 
-                onClick={() => setMode('signup')}
-                className="text-primary font-bold hover:underline"
-              >
-                Signup
-              </button>
-            </p>
-          ) : (
-            <button 
-              type="button" 
-              onClick={() => setMode('login')}
-              className="text-sm text-center text-zinc-500 font-medium hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors"
+
+        <CardFooter className="px-8 pb-8 pt-0 flex flex-col gap-4">
+            <div className="relative w-full">
+              <div className="absolute inset-0 flex items-center">
+                <span className="w-full border-t border-zinc-200 dark:border-zinc-800" />
+              </div>
+              <div className="relative flex justify-center text-xs uppercase">
+                <span className="bg-white dark:bg-black px-2 text-zinc-500">or</span>
+              </div>
+            </div>
+            
+            <Button 
+                variant="ghost" 
+                className="w-full text-zinc-500 dark:text-zinc-400 transition-all hover:bg-zinc-100 dark:hover:bg-zinc-900"
+                onClick={() => setMode(mode === 'login' ? 'signup' : 'login')}
             >
-              Back to Sign In
-            </button>
-          )}
-          <p className="text-center w-full text-[10px] uppercase tracking-tighter text-zinc-400">
-            Secure biometric-ready terminal. Authorized personnel only.
-          </p>
+                {mode === 'login' ? "New User? Create Account" : "Already have an account? Sign In"}
+            </Button>
         </CardFooter>
       </Card>
     </div>

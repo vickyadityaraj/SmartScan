@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -8,21 +8,21 @@ import { Label } from '@/components/ui/label'
 import { toast } from 'sonner'
 import { createInternalUser, getUsersList } from '../actions'
 import { Loader2, Users, ShieldPlus, UserPlus2 } from 'lucide-react'
-import { useRouter } from 'next/navigation'
-import React, { useEffect } from 'react'
 
 export default function AdminUsersPage() {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [users, setUsers] = useState<any[]>([])
   const [isLoadingUsers, setIsLoadingUsers] = useState(true)
-  const router = useRouter()
 
   useEffect(() => {
-    getUsersList().then(res => {
-      if (res.data) setUsers(res.data)
-      setIsLoadingUsers(false)
-    })
+    fetchUsers()
   }, [])
+
+  async function fetchUsers() {
+    const res = await getUsersList()
+    if (res.data) setUsers(res.data)
+    setIsLoadingUsers(false)
+  }
 
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
@@ -37,9 +37,7 @@ export default function AdminUsersPage() {
       toast.error(error)
     } else if (success) {
       toast.success('Internal user created securely!')
-      const res = await getUsersList()
-      if (res.data) setUsers(res.data)
-      // clear form gently
+      fetchUsers()
       const form = e.target as HTMLFormElement
       form.reset()
     }
@@ -60,7 +58,7 @@ export default function AdminUsersPage() {
               <div className="flex gap-4 items-center mb-2">
                  <div className="p-2 bg-primary text-primary-foreground rounded-lg">
                    <ShieldPlus className="h-6 w-6" />
-                 </div>
+                  </div>
                  <div>
                    <CardTitle>Provision Credentials</CardTitle>
                    <CardDescription>Grant dashboard access to staff.</CardDescription>
@@ -83,12 +81,17 @@ export default function AdminUsersPage() {
                  </div>
                  <div className="space-y-2">
                    <Label>System Role</Label>
-                   <select name="role" required defaultValue="" className="flex h-11 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50">
-                     <option value="" disabled>Select access level</option>
-                     <option value="management">Store Management (Inventory)</option>
-                     <option value="security">Loss Prevention (Security Check)</option>
-                     <option value="admin">System Admin</option>
-                   </select>
+                   <select 
+                      name="role" 
+                      required 
+                      defaultValue=""
+                      className="flex h-11 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                    >
+                      <option value="" disabled>Select access level</option>
+                      <option value="management">Store Management (Inventory)</option>
+                      <option value="security">Loss Prevention (Security Check)</option>
+                      <option value="admin">System Admin</option>
+                    </select>
                  </div>
               </form>
            </CardContent>

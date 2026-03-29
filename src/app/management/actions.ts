@@ -53,7 +53,7 @@ export async function addProduct(formData: FormData) {
   }
 
   const supabase = await createClient()
-  const adminClient = await createAdminClient()
+  const adminClient = await createAdminClient() // Privileged client for storage
   
   const name = formData.get('name') as string
   const barcode = formData.get('barcode') as string

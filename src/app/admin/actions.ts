@@ -30,7 +30,13 @@ export async function getAdminAnalytics() {
   const totalRevenue = orders.reduce((sum, order) => sum + (Number(order.total_price) || 0), 0)
   const totalTransactions = orders.length
   
-  const revenueData = ReactMetrics(orders)
+  // Group orders by date for chart
+  const map = new Map<string, number>()
+  orders.forEach(order => {
+     const date = new Date(order.created_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })
+     map.set(date, (map.get(date) || 0) + Number(order.total_price))
+  })
+  const revenueData = Array.from(map.entries()).map(([date, amount]) => ({ date, amount }))
 
   return { 
     totalRevenue, 
@@ -39,15 +45,6 @@ export async function getAdminAnalytics() {
     lowStockCount: products.filter(p => p.stock < 10).length,
     revenueData
   }
-}
-
-function ReactMetrics(orders: any[]) {
-  const map = new Map<string, number>()
-  orders.forEach(order => {
-     const date = new Date(order.created_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })
-     map.set(date, (map.get(date) || 0) + Number(order.total_price))
-  })
-  return Array.from(map.entries()).map(([date, amount]) => ({ date, amount }))
 }
 
 export async function createInternalUser(formData: FormData) {
@@ -82,6 +79,7 @@ export async function createInternalUser(formData: FormData) {
       })
 
     if (error) {
+      if (error.code === '23505') return { error: 'Email already registered.' }
       return { error: error.message }
     }
 
