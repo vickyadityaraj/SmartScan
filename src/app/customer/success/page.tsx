@@ -7,7 +7,9 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Button } from '@/components/ui/button'
 import { ScanLine, CheckCircle2 } from 'lucide-react'
 
-export default function CheckoutSuccessPage() {
+import { Suspense } from 'react'
+
+function SuccessContent() {
   const searchParams = useSearchParams()
   const qrCode = searchParams.get('qr')
   const orderId = searchParams.get('id')
@@ -68,5 +70,13 @@ export default function CheckoutSuccessPage() {
         </CardFooter>
       </Card>
     </div>
+  )
+}
+
+export default function CheckoutSuccessPage() {
+  return (
+    <Suspense fallback={<div className="flex items-center justify-center p-20 text-zinc-500 italic">Loading exit pass...</div>}>
+      <SuccessContent />
+    </Suspense>
   )
 }
