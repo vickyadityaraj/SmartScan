@@ -3,10 +3,10 @@
 import { useEffect, useRef, useState } from 'react'
 import { Html5Qrcode, Html5QrcodeSupportedFormats } from 'html5-qrcode'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Loader2, CameraOff, AlertCircle } from 'lucide-react'
+import { Loader2, CameraOff, AlertCircle, Scan } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 
-export function Scanner({ onScan }: { onScan: (decodedText: string) => void }) {
+function ScannerInner({ onScan }: { onScan: (decodedText: string) => void }) {
   const [error, setError] = useState<string | null>(null)
   const [isInitializing, setIsInitializing] = useState(true)
   const scannerRef = useRef<Html5Qrcode | null>(null)
@@ -33,7 +33,7 @@ export function Scanner({ onScan }: { onScan: (decodedText: string) => void }) {
         const config = {
           fps: 10,
           qrbox: { width: 280, height: 280 },
-          aspectRatio: 1.0
+          // Removing fixed aspectRatio to prevent black frames on some devices
         }
 
         await scannerRef.current.start(
@@ -133,5 +133,33 @@ export function Scanner({ onScan }: { onScan: (decodedText: string) => void }) {
         )}
       </CardContent>
     </Card>
+  )
+}
+
+// Internal styles to ensure the injected video element is responsive
+const ScannerStyles = () => (
+  <style dangerouslySetInnerHTML={{ __html: `
+    #reader video {
+      width: 100% !important;
+      height: 100% !important;
+      object-fit: cover !important;
+      border-radius: 8px;
+    }
+    #reader canvas {
+      display: none;
+    }
+    @keyframes scan {
+      0%, 100% { top: 0% }
+      50% { top: 100% }
+    }
+  `}} />
+)
+
+export function Scanner(props: { onScan: (text: string) => void }) {
+  return (
+    <>
+      <ScannerStyles />
+      <ScannerInner {...props} />
+    </>
   )
 }
