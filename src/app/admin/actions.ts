@@ -110,3 +110,31 @@ export async function getUsersList() {
 
   return { data }
 }
+
+export async function deleteUserAction(id: string) {
+  try {
+    const session = await getSession()
+    if (!session || session.role !== 'admin') {
+      return { error: 'Unauthorized. Admins only.' }
+    }
+
+    const supabase = await createClient()
+
+    // Delete user from directory
+    const { error } = await supabase
+      .from('users')
+      .delete()
+      .eq('id', id)
+
+    if (error) {
+      if (error.code === '23503') return { error: 'Cannot delete user with existing orders or records.' }
+      return { error: error.message }
+    }
+
+    revalidatePath('/admin/users')
+    return { success: true }
+    
+  } catch (err: any) {
+    return { error: err.message || 'Failed to delete user' }
+  }
+}

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useCallback, useState } from 'react'
 import { Scanner } from '@/components/scanner'
 import { useCart } from '@/components/providers/cart-provider'
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
@@ -19,8 +19,8 @@ export default function ScanPage() {
   const [cameraActive, setCameraActive] = useState(false)
   const router = useRouter()
 
-  async function handleLookup(barcode: string) {
-    if (isLookingUp || !barcode) return
+  const handleLookup = useCallback(async (barcode: string) => {
+    if (!barcode) return
     setIsLookingUp(true)
     
     // Slight artificial delay to indicate work and prevent double scans
@@ -33,7 +33,7 @@ export default function ScanPage() {
     }
     
     setIsLookingUp(false)
-  }
+  }, [addItem])
 
   async function handleCheckout() {
     if (items.length === 0) return
@@ -65,7 +65,7 @@ export default function ScanPage() {
         
         {cameraActive ? (
           <div className="w-full relative">
-            <Scanner onScan={(text) => handleLookup(text)} />
+            <Scanner onScan={handleLookup} />
             <Button variant="outline" className="mt-4 w-full" onClick={() => setCameraActive(false)}>
               Turn off camera
             </Button>

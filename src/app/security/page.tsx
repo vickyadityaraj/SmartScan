@@ -1,6 +1,4 @@
-'use client'
-
-import { useState } from 'react'
+import { useCallback, useState } from 'react'
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -23,7 +21,7 @@ export default function SecurityDashboard() {
   const [scannedBarcodes, setScannedBarcodes] = useState<string[]>([])
   const [currentScanInput, setCurrentScanInput] = useState('')
 
-  async function handleQRSubmit(value: string) {
+  const handleQRSubmit = useCallback(async (value: string) => {
     if (!value) return
     setIsLookingUp(true)
     const { order, error } = await lookupOrderByQr(value)
@@ -44,7 +42,7 @@ export default function SecurityDashboard() {
     setVerificationMode('none')
     setScannedBarcodes([])
     setMeasuredWeight('')
-  }
+  }, [])
 
   async function handleVerifySubmit() {
     if (!activeOrder) return
@@ -230,7 +228,7 @@ export default function SecurityDashboard() {
 
        {cameraActive ? (
          <div className="space-y-4">
-            <Scanner onScan={(text) => handleQRSubmit(text)} />
+            <Scanner onScan={handleQRSubmit} />
             <Button variant="outline" className="w-full" onClick={() => setCameraActive(false)}>Cancel Camera Scan</Button>
          </div>
        ) : (
