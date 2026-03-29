@@ -18,7 +18,7 @@ export type CartItem = Product & {
 
 type CartContextType = {
   items: CartItem[]
-  addItem: (product: Product) => void
+  addItem: (product: Product, quantity?: number) => void
   removeItem: (productId: string) => void
   updateQuantity: (productId: string, quantity: number) => void
   clearCart: () => void
@@ -31,17 +31,17 @@ const CartContext = createContext<CartContextType | undefined>(undefined)
 export function CartProvider({ children }: { children: React.ReactNode }) {
   const [items, setItems] = useState<CartItem[]>([])
 
-  const addItem = (product: Product) => {
+  const addItem = (product: Product, quantity: number = 1) => {
     setItems((currentItems) => {
       const existing = currentItems.find((item) => item.id === product.id)
       if (existing) {
-        toast.success(`Increased ${product.name} quantity to ${existing.quantity + 1}`)
+        toast.success(`Updated ${product.name} quantity to ${existing.quantity + quantity}`)
         return currentItems.map((item) =>
-          item.id === product.id ? { ...item, quantity: item.quantity + 1 } : item
+          item.id === product.id ? { ...item, quantity: item.quantity + quantity } : item
         )
       }
-      toast.success(`Added ${product.name} to cart`)
-      return [...currentItems, { ...product, quantity: 1 }]
+      toast.success(`Added ${quantity}x ${product.name} to cart`)
+      return [...currentItems, { ...product, quantity }]
     })
   }
 

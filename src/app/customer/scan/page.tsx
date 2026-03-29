@@ -17,23 +17,36 @@ export default function ScanPage() {
   const [isCheckingOut, setIsCheckingOut] = useState(false)
   const [manualBarcode, setManualBarcode] = useState('')
   const [cameraActive, setCameraActive] = useState(false)
+  
+  // Confirmation Popup State
+  const [scannedProduct, setScannedProduct] = useState<any | null>(null)
+  const [scannedQuantity, setScannedQuantity] = useState(1)
+  
   const router = useRouter()
 
   const handleLookup = useCallback(async (barcode: string) => {
     if (!barcode) return
     setIsLookingUp(true)
     
-    // Slight artificial delay to indicate work and prevent double scans
     const res = await lookupProductByBarcode(barcode)
     
     if (res.error) {
       toast.error(res.error)
     } else if (res.product) {
-      addItem(res.product)
+      setScannedProduct(res.product)
+      setScannedQuantity(1)
     }
     
     setIsLookingUp(false)
-  }, [addItem])
+  }, [])
+
+  function confirmAdd() {
+    if (scannedProduct) {
+      addItem(scannedProduct, scannedQuantity)
+      setScannedProduct(null)
+      setScannedQuantity(1)
+    }
+  }
 
   async function handleCheckout() {
     if (items.length === 0) return
@@ -164,6 +177,60 @@ export default function ScanPage() {
           </CardFooter>
         </Card>
       </div>
+
+      {/* Confirmation Popup */}
+      {scannedProduct && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-300">
+           <Card className="w-full max-w-md shadow-2xl border-2 border-primary/20 animate-in zoom-in-95 duration-300">
+              <CardHeader className="text-center bg-zinc-50 dark:bg-zinc-950 border-b">
+                 <CardTitle className="text-xl">Add to Cart</CardTitle>
+              </CardHeader>
+              <CardContent className="pt-6 text-center">
+                 {scannedProduct.image_url ? (
+                   <img src={scannedProduct.image_url} alt={scannedProduct.name} className="h-40 w-40 mx-auto rounded-xl object-cover shadow-lg mb-4" />
+                 ) : (
+                   <div className="h-40 w-40 mx-auto rounded-xl bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center mb-4">
+                      <ScanLine className="h-12 w-12 text-zinc-300" />
+                   </div>
+                 )}
+                 <h2 className="text-xl font-bold">{scannedProduct.name}</h2>
+                 <p className="text-primary font-bold text-2xl mt-1">${scannedProduct.price.toFixed(2)}</p>
+                 <p className="text-zinc-500 text-sm mt-1">{scannedProduct.weight}g per unit</p>
+                 
+                 <div className="mt-8 space-y-3">
+                    <p className="text-sm font-semibold uppercase tracking-wider text-zinc-400">Select Quantity</p>
+                    <div className="flex items-center justify-center gap-6">
+                       <Button 
+                          variant="outline" 
+                          size="icon" 
+                          className="h-12 w-12 rounded-full border-2" 
+                          onClick={() => setScannedQuantity(prev => Math.max(1, prev - 1))}
+                       >
+                          <Minus className="h-5 w-5" />
+                       </Button>
+                       <span className="text-3xl font-bold w-12">{scannedQuantity}</span>
+                       <Button 
+                          variant="outline" 
+                          size="icon" 
+                          className="h-12 w-12 rounded-full border-2" 
+                          onClick={() => setScannedQuantity(prev => prev + 1)}
+                       >
+                          <Plus className="h-5 w-5" />
+                       </Button>
+                    </div>
+                 </div>
+              </CardContent>
+              <CardFooter className="flex gap-3 pt-6 border-t mt-4">
+                 <Button variant="ghost" className="flex-1 h-12" onClick={() => setScannedProduct(null)}>
+                    Cancel
+                 </Button>
+                 <Button className="flex-1 h-12 text-lg font-bold" onClick={confirmAdd}>
+                    Add to Cart
+                 </Button>
+              </CardFooter>
+           </Card>
+        </div>
+      )}
     </div>
   )
 }
