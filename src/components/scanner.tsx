@@ -6,11 +6,19 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Loader2, CameraOff, AlertCircle, Scan } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 
-function ScannerInner({ onScan }: { onScan: (decodedText: string) => void }) {
+function ScannerInner({ 
+  onScan, 
+  cooldownMs = 2000 
+}: { 
+  onScan: (decodedText: string) => void,
+  cooldownMs?: number
+}) {
   const [error, setError] = useState<string | null>(null)
   const [isInitializing, setIsInitializing] = useState(true)
   const scannerRef = useRef<Html5Qrcode | null>(null)
   const onScanRef = useRef(onScan)
+  const lastScannedRef = useRef<string | null>(null)
+  const lastScannedTimeRef = useRef<number>(0)
 
   // Update the ref when onScan changes, without triggering useEffect
   useEffect(() => {
@@ -41,6 +49,17 @@ function ScannerInner({ onScan }: { onScan: (decodedText: string) => void }) {
           config,
           (decodedText) => {
             if (mounted) {
+              const now = Date.now()
+              const isSameBarcode = decodedText === lastScannedRef.current
+              const timeSinceLastScan = now - lastScannedTimeRef.current
+
+              if (isSameBarcode && timeSinceLastScan < cooldownMs) {
+                // Ignore rapid redundant scan
+                return
+              }
+
+              lastScannedRef.current = decodedText
+              lastScannedTimeRef.current = now
               onScanRef.current(decodedText)
             }
           },
@@ -155,7 +174,10 @@ const ScannerStyles = () => (
   `}} />
 )
 
-export function Scanner(props: { onScan: (text: string) => void }) {
+export function Scanner(props: { 
+  onScan: (text: string) => void,
+  cooldownMs?: number 
+}) {
   return (
     <>
       <ScannerStyles />
