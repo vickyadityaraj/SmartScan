@@ -1,6 +1,6 @@
 'use server'
 
-import { createClient } from '@/lib/supabase/server'
+import { createClient, createAdminClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { getSession } from '@/lib/auth'
 
@@ -10,7 +10,7 @@ export async function lookupOrderByQr(qrValue: string) {
     return { error: 'Unauthorized' }
   }
 
-  const supabase = await createClient()
+  const supabase = await createAdminClient()
 
   const { data, error } = await supabase
     .from('orders')
@@ -53,7 +53,7 @@ export async function markOrderVerified(orderId: string) {
     return { error: 'Unauthorized' }
   }
 
-  const supabase = await createClient()
+  const supabase = await createAdminClient()
   
   const { error } = await supabase
     .from('orders')

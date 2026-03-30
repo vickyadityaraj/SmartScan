@@ -1,6 +1,6 @@
 'use server'
 
-import { createClient } from '@/lib/supabase/server'
+import { createClient, createAdminClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { getSession } from '@/lib/auth'
 
@@ -29,7 +29,7 @@ export async function submitCheckoutAction(items: { id: string, quantity: number
     return { error: 'Not authenticated' }
   }
 
-  const supabase = await createClient()
+  const supabase = await createAdminClient()
 
   // Generate a random hex string for the QR code value
   const qr_code_value = [...Array(32)].map(() => Math.floor(Math.random() * 16).toString(16)).join("")

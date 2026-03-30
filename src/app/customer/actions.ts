@@ -1,13 +1,13 @@
 'use server'
 
-import { createClient } from '@/lib/supabase/server'
+import { createClient, createAdminClient } from '@/lib/supabase/server'
 import { getSession } from '@/lib/auth'
 
 export async function getCustomerOrders() {
   const session = await getSession()
   if (!session) throw new Error('Not authenticated')
 
-  const supabase = await createClient()
+  const supabase = await createAdminClient()
 
   const { data: orders, error } = await supabase
     .from('orders')
