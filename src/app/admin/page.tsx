@@ -25,7 +25,7 @@ export default async function AdminDashboard() {
             <HandCoins className="h-4 w-4 text-emerald-500" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">${data.totalRevenue.toFixed(2)}</div>
+            <div className="text-2xl font-bold">₹{data.totalRevenue.toFixed(2)}</div>
             <p className="text-xs text-zinc-500 mt-1">Lifetime processed</p>
           </CardContent>
         </Card>

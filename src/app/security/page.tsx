@@ -89,7 +89,7 @@ export default function SecurityDashboard() {
 
   if (activeOrder) {
     // Determine status of secondary verifications
-    const weightMatch = measuredWeight ? Math.abs(parseFloat(measuredWeight) - activeOrder.total_weight) <= 10 : null // 10g tolerance
+    const weightMatch = measuredWeight ? Math.abs(parseFloat(measuredWeight) - activeOrder.total_weight) <= 0.01 : null // 0.01kg tolerance
     
     let allScannedMatcher = null
     if (verificationMode === 'scan') {
@@ -140,7 +140,7 @@ export default function SecurityDashboard() {
              <CardContent className="pt-6 space-y-4">
                 <div className="flex justify-between font-mono text-sm text-zinc-500">
                   <span>Expected Weight</span>
-                  <span>{activeOrder.total_weight}g</span>
+                  <span>{activeOrder.total_weight}kg</span>
                 </div>
                 <div className="flex justify-between font-mono text-sm text-zinc-500">
                   <span>Total Items</span>
@@ -178,13 +178,13 @@ export default function SecurityDashboard() {
                   </div>
                 ) : verificationMode === 'weight' ? (
                    <div className="space-y-4">
-                     <label className="text-sm font-medium">Place items on scale and enter weight (g)</label>
+                     <label className="text-sm font-medium">Place items on scale and enter weight (kg)</label>
                      <div className="flex gap-2">
-                       <Input type="number" value={measuredWeight} onChange={e => setMeasuredWeight(e.target.value)} placeholder="e.g. 500" className="h-12 text-lg" />
+                       <Input type="number" value={measuredWeight} onChange={e => setMeasuredWeight(e.target.value)} placeholder="e.g. 0.500" className="h-12 text-lg" />
                      </div>
                      {weightMatch === true && (
                        <div className="flex items-center gap-2 text-green-600 font-semibold p-3 bg-green-100 dark:bg-green-900/40 rounded-lg">
-                         <Check className="h-5 w-5" /> Weight matches expected (+/- 10g)
+                         <Check className="h-5 w-5" /> Weight matches expected (+/- 0.01kg)
                        </div>
                      )}
                      {weightMatch === false && (

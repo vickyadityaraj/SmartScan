@@ -192,8 +192,8 @@ export default function ManagementPage() {
               </CardHeader>
               <CardContent>
                 <div className="flex justify-between items-center mb-6">
-                  <span className="text-2xl font-black text-primary">${Number(p.price).toFixed(2)}</span>
-                  <span className="text-sm text-zinc-500">{p.weight}g</span>
+                  <span className="text-2xl font-black text-primary">₹{Number(p.price).toFixed(2)}</span>
+                  <span className="text-sm text-zinc-500">{p.weight}kg</span>
                 </div>
                 <div className="flex gap-2">
                   <Button variant="outline" className="flex-1 h-10 border-2 font-bold" onClick={() => handleStockUpdate(p.id, p.stock, -1)}>- 1</Button>

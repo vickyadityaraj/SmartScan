@@ -138,7 +138,7 @@ export default function ScanPage() {
                     )}
                     <div className="flex-1">
                       <h4 className="font-semibold text-sm">{item.name}</h4>
-                      <p className="text-xs text-zinc-500">{item.weight}g each</p>
+                      <p className="text-xs text-zinc-500">{item.weight}kg each</p>
                       <div className="mt-2 flex items-center gap-3">
                         <Button size="icon" variant="outline" className="h-6 w-6 rounded-full" onClick={() => updateQuantity(item.id, item.quantity - 1)}>
                           <Minus className="h-3 w-3" />
@@ -150,7 +150,7 @@ export default function ScanPage() {
                       </div>
                     </div>
                     <div className="text-right flex flex-col items-end gap-2">
-                       <span className="font-medium">${(item.price * item.quantity).toFixed(2)}</span>
+                       <span className="font-medium">₹{(item.price * item.quantity).toFixed(2)}</span>
                        <Button size="icon" variant="ghost" className="h-8 w-8 text-red-500 hover:text-red-700 hover:bg-red-50" onClick={() => removeItem(item.id)}>
                          <Trash2 className="h-4 w-4" />
                        </Button>
@@ -163,7 +163,7 @@ export default function ScanPage() {
           <CardFooter className="flex-col gap-4 border-t p-6 pb-8">
             <div className="flex justify-between w-full text-lg">
               <span className="font-medium text-zinc-600">Total</span>
-              <span className="font-bold">${totalPrice.toFixed(2)}</span>
+              <span className="font-bold">₹{totalPrice.toFixed(2)}</span>
             </div>
             <Button 
               size="lg" 
@@ -194,8 +194,8 @@ export default function ScanPage() {
                    </div>
                  )}
                  <h2 className="text-xl font-bold">{scannedProduct.name}</h2>
-                 <p className="text-primary font-bold text-2xl mt-1">${scannedProduct.price.toFixed(2)}</p>
-                 <p className="text-zinc-500 text-sm mt-1">{scannedProduct.weight}g per unit</p>
+                 <p className="text-primary font-bold text-2xl mt-1">₹{scannedProduct.price.toFixed(2)}</p>
+                 <p className="text-zinc-500 text-sm mt-1">{scannedProduct.weight}kg per unit</p>
                  
                  <div className="mt-8 space-y-3">
                     <p className="text-sm font-semibold uppercase tracking-wider text-zinc-400">Select Quantity</p>

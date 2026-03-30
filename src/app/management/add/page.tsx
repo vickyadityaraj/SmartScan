@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { toast } from 'sonner'
 import { addProduct } from '../actions'
-import { Loader2, PackagePlus, ArrowLeft, Image as ImageIcon, Barcode, DollarSign, Weight, Scan, X } from 'lucide-react'
+import { Loader2, PackagePlus, ArrowLeft, Image as ImageIcon, Barcode, IndianRupee, Weight, Scan, X } from 'lucide-react'
 import Link from 'next/link'
 import { Scanner } from '@/components/scanner'
 
@@ -119,17 +119,17 @@ export default function AddProductPage() {
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <div className="space-y-2">
-                <Label htmlFor="price" className="text-xs uppercase tracking-widest font-bold text-zinc-500">Price ($)</Label>
+                <Label htmlFor="price" className="text-xs uppercase tracking-widest font-bold text-zinc-500">Price (₹)</Label>
                 <div className="relative">
-                  <DollarSign className="absolute left-3 top-3 h-4 w-4 text-zinc-400" />
+                  <IndianRupee className="absolute left-3 top-3 h-4 w-4 text-zinc-400" />
                   <Input id="price" name="price" type="number" step="0.01" required placeholder="9.99" className="pl-10 h-11 bg-zinc-50/50 dark:bg-zinc-900/50" />
                 </div>
               </div>
               <div className="space-y-2">
-                <Label htmlFor="weight" className="text-xs uppercase tracking-widest font-bold text-zinc-500">Weight (g)</Label>
+                <Label htmlFor="weight" className="text-xs uppercase tracking-widest font-bold text-zinc-500">Weight (kg)</Label>
                 <div className="relative">
                   <Weight className="absolute left-3 top-3 h-4 w-4 text-zinc-400" />
-                  <Input id="weight" name="weight" type="number" step="0.1" required placeholder="250.0" className="pl-10 h-11 bg-zinc-50/50 dark:bg-zinc-900/50" />
+                  <Input id="weight" name="weight" type="number" step="0.001" required placeholder="0.250" className="pl-10 h-11 bg-zinc-50/50 dark:bg-zinc-900/50" />
                 </div>
               </div>
               <div className="space-y-2">

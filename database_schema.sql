@@ -58,7 +58,7 @@ CREATE TABLE "public"."products" (
     "name" TEXT NOT NULL,
     "barcode" TEXT NOT NULL UNIQUE,
     "price" NUMERIC(10, 2) NOT NULL,
-    "weight" NUMERIC(10, 2) NOT NULL, -- in grams
+    "weight" NUMERIC(10, 2) NOT NULL, -- in kilograms
     "stock" INTEGER NOT NULL DEFAULT 0,
     "image_url" TEXT,
     "created_at" TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL

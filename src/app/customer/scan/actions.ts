@@ -65,7 +65,25 @@ export async function submitCheckoutAction(items: { id: string, quantity: number
     return { error: itemsError.message }
   }
 
+  // Decrease stock for each product
+  // In a production environment, this should ideally be done in a single transaction or via an RPC
+  for (const item of items) {
+    const { data: currentProduct } = await supabase
+      .from('products')
+      .select('stock')
+      .eq('id', item.id)
+      .single()
+
+    if (currentProduct) {
+      await supabase
+        .from('products')
+        .update({ stock: Math.max(0, currentProduct.stock - item.quantity) })
+        .eq('id', item.id)
+    }
+  }
+
   revalidatePath('/customer')
+  revalidatePath('/management') // Revalidate inventory as well
   
   return { success: true, orderId: order.id, qrCode: order.qr_code_value }
 }

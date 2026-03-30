@@ -79,7 +79,7 @@ export default function CustomerDashboard() {
                 <CardHeader className="bg-zinc-50 dark:bg-zinc-900 pb-4 border-b">
                   <div className="flex justify-between items-start">
                     <div>
-                      <CardTitle className="text-base">${order.total_price.toFixed(2)}</CardTitle>
+                      <CardTitle className="text-base">₹{order.total_price.toFixed(2)}</CardTitle>
                       <CardDescription>{new Date(order.created_at).toLocaleDateString()}</CardDescription>
                     </div>
                     <div className={`px-2 py-1 rounded-full text-xs font-medium ${
@@ -91,7 +91,7 @@ export default function CustomerDashboard() {
                 </CardHeader>
                 <CardContent className="pt-4 flex justify-between items-center">
                   <div className="text-sm text-zinc-500">
-                    <span>{order.order_items?.length || 0} items • {order.total_weight}g</span>
+                    <span>{order.order_items?.length || 0} items • {order.total_weight}kg</span>
                   </div>
                   <QrCode className="h-4 w-4 text-zinc-400 group-hover:text-primary transition-colors" />
                 </CardContent>
@@ -137,7 +137,7 @@ export default function CustomerDashboard() {
                   />
                 </div>
                 <div className="mt-6 text-center">
-                    <p className="font-bold text-lg leading-tight">Order: ${selectedOrder.total_price.toFixed(2)}</p>
+                    <p className="font-bold text-lg leading-tight">Order: ₹{selectedOrder.total_price.toFixed(2)}</p>
                     <p className="text-xs text-zinc-400 mt-1">{new Date(selectedOrder.created_at).toLocaleString()}</p>
                 </div>
               </CardContent>
