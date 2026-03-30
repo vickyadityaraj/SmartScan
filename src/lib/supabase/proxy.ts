@@ -21,7 +21,7 @@ export async function updateSession(request: NextRequest) {
   }
 
   // Auth Redirects
-  const isAuthRoute = currentPath.startsWith('/login') || currentPath.startsWith('/auth')
+  const isAuthRoute = currentPath.startsWith('/login') || currentPath.startsWith('/signup') || currentPath.startsWith('/auth')
   const isRoot = currentPath === '/'
 
   if (!user && !isAuthRoute && !isRoot) {
@@ -32,7 +32,7 @@ export async function updateSession(request: NextRequest) {
     // Redirect authenticated users away from login/root
     if (isAuthRoute || isRoot) {
       let redirectPath = '/customer'
-      if (role === 'admin') redirectPath = '/admin'
+      if (role === 'admin') redirectPath = '/admin/users'
       else if (role === 'security') redirectPath = '/security'
       else if (role === 'management') redirectPath = '/management'
       

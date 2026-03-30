@@ -7,7 +7,7 @@ const secret = new TextEncoder().encode(process.env.JWT_SECRET || 'fallback_secr
  * Creates a stateless OTP challenge cookie (encrypted JWT).
  * Stores pending signup data (email, name, passwordHash) to avoid unnecessary DB inserts.
  */
-export async function createChallenge(email: string, otp: string, data: { name?: string, passwordHash?: string } = {}) {
+export async function createChallenge(email: string, otp: string, data: Record<string, any> = {}) {
   const token = await new SignJWT({ email, otp, ...data })
     .setProtectedHeader({ alg: 'HS256' })
     .setIssuedAt()

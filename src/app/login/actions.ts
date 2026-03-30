@@ -44,8 +44,8 @@ export async function signupAction(formData: FormData) {
   try {
     await sendOtpEmail(email, otp)
     return { success: true }
-  } catch (err) {
-    console.error('SMTP Error:', err)
+  } catch (error) {
+    console.error('SMTP Error:', error)
     return { error: 'Failed to send verification code. Please check SMTP settings.' }
   }
 }
@@ -70,7 +70,7 @@ export async function verifyOtpAction(formData: FormData) {
     return { error: 'Invalid or expired code. Please try again.' }
   }
 
-  const { email, name, passwordHash } = challenge as any
+  const { email, name, passwordHash } = challenge as { email: string; name: string; passwordHash: string }
   const supabase = await createClient()
 
   // 2. Upsert user in database now that email is verified
@@ -143,4 +143,134 @@ export async function loginAction(formData: FormData) {
 export async function logoutAction() {
   const { logout } = await import('@/lib/auth')
   await logout()
+}
+
+/**
+ * Initiates the Forgot Password flow by sending an OTP.
+ */
+export async function forgotPasswordAction(formData: FormData) {
+  const email = formData.get('email') as string
+  if (!email) return { error: 'Please enter your email address' }
+
+  const supabase = await createClient()
+  const { data: user } = await supabase
+    .from('users')
+    .select('id')
+    .eq('email', email)
+    .single()
+
+  if (!user) {
+    // For security, don't confirm if user exists or not, but here we can be helpful
+    return { error: 'No account found with this email' }
+  }
+
+  const otp = Math.floor(100000 + Math.random() * 900000).toString()
+  await createChallenge(email, otp, { purpose: 'password_reset' })
+
+  const { sendPasswordResetOtpEmail } = await import('@/lib/mailer')
+  try {
+    await sendPasswordResetOtpEmail(email, otp)
+    return { success: true }
+  } catch (error) {
+    console.error('SMTP Error:', error)
+    return { error: 'Failed to send reset code. Please try again later.' }
+  }
+}
+
+/**
+ * Verifies the password reset OTP.
+ */
+export async function verifyForgotPasswordOtpAction(formData: FormData) {
+  const code = formData.get('code') as string
+  if (!code) return { error: 'Please enter the verification code' }
+
+  const challenge = await verifyChallenge(code)
+  if (!challenge || (challenge as any).purpose !== 'password_reset') {
+    return { error: 'Invalid or expired code' }
+  }
+
+  return { success: true, email: (challenge as { email: string }).email }
+}
+
+/**
+ * Resets the password using the verified email.
+ */
+export async function resetPasswordAction(formData: FormData) {
+  const email = formData.get('email') as string
+  const password = formData.get('password') as string
+
+  if (!email || !password || password.length < 6) {
+    return { error: 'Password must be at least 6 characters' }
+  }
+
+  const supabase = await createClient()
+  const passwordHash = await bcrypt.hash(password, 10)
+
+  const { error } = await supabase
+    .from('users')
+    .update({ password_hash: passwordHash })
+    .eq('email', email)
+
+  if (error) return { error: error.message }
+
+  // Clear challenge cookie
+  const cookieStore = await cookies()
+  cookieStore.delete('otp_challenge')
+
+  return { success: true }
+}
+
+/**
+ * Updates the password for a logged-in user.
+ */
+export async function updatePasswordAction(formData: FormData) {
+  const currentPassword = formData.get('currentPassword') as string
+  const newPassword = formData.get('newPassword') as string
+
+  if (!currentPassword || !newPassword || newPassword.length < 6) {
+    return { error: 'New password must be at least 6 characters' }
+  }
+
+  const { getSession } = await import('@/lib/auth')
+  const session = await getSession()
+  if (!session) return { error: 'Unauthorized' }
+
+  const supabase = await createClient()
+  const { data: user } = await supabase
+    .from('users')
+    .select('password_hash')
+    .eq('id', session.userId)
+    .single()
+
+  if (!user || !user.password_hash) return { error: 'User not found' }
+
+  const match = await bcrypt.compare(currentPassword, user.password_hash)
+  if (!match) return { error: 'Incorrect current password' }
+
+  const newHash = await bcrypt.hash(newPassword, 10)
+  const { error } = await supabase
+    .from('users')
+    .update({ password_hash: newHash })
+    .eq('id', session.userId)
+
+  if (error) return { error: error.message }
+  return { success: true }
+}
+
+/**
+ * Fetches current user profile.
+ */
+export async function getUserProfileAction() {
+  const { getSession } = await import('@/lib/auth')
+  const session = await getSession()
+  if (!session) return null
+
+  const supabase = await createClient()
+  const { data: user } = await supabase
+    .from('users')
+    .select('name, email, role')
+    .eq('id', session.userId)
+    .single()
+
+  return user
 }

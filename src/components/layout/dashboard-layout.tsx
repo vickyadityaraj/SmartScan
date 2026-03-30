@@ -3,9 +3,10 @@
 import { useState, ReactNode } from 'react'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
-import { ScanLine, LogOut, Menu, X } from 'lucide-react'
+import { ScanLine, LogOut, Menu, X, User } from 'lucide-react'
 import { logoutAction } from '@/app/login/actions'
 import { useRouter, usePathname } from 'next/navigation'
+import { ProfileDialog } from '@/components/profile/profile-dialog'
 
 export function DashboardLayout({
   children,
@@ -61,6 +62,13 @@ export function DashboardLayout({
           >
             {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
           </Button>
+          
+          <ProfileDialog>
+            <Button variant="ghost" size="icon" title="Profile" className="text-zinc-500 hover:text-primary hover:bg-primary/10">
+              <User className="h-5 w-5" />
+              <span className="sr-only">Profile</span>
+            </Button>
+          </ProfileDialog>
           
           <Button variant="ghost" size="icon" onClick={handleLogout} title="Log out" className="text-zinc-500 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/10">
             <LogOut className="h-5 w-5" />
