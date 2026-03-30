@@ -10,7 +10,7 @@ export async function getProducts() {
     return []
   }
 
-  const supabase = await createClient()
+  const supabase = await createAdminClient()
   
   const { data, error } = await supabase
     .from('products')
@@ -31,7 +31,7 @@ export async function updateProductStock(productId: string, newStock: number) {
     return { error: 'Unauthorized' }
   }
 
-  const supabase = await createClient()
+  const supabase = await createAdminClient()
   
   const { error } = await supabase
     .from('products')
@@ -52,7 +52,7 @@ export async function addProduct(formData: FormData) {
     return { error: 'Unauthorized' }
   }
 
-  const supabase = await createClient()
+  const supabase = await createAdminClient()
   const adminClient = await createAdminClient() // Privileged client for storage
   
   const name = formData.get('name') as string
@@ -96,6 +96,28 @@ export async function addProduct(formData: FormData) {
 
   if (insertError) {
     return { error: insertError.message }
+  }
+
+  revalidatePath('/management')
+  return { success: true }
+}
+
+export async function deleteProduct(productId: string) {
+  const session = await getSession()
+  if (!session || !['management', 'admin'].includes(session.role)) {
+    return { error: 'Unauthorized' }
+  }
+
+  const supabase = await createAdminClient()
+  
+  const { error } = await supabase
+    .from('products')
+    .delete()
+    .eq('id', productId)
+
+  if (error) {
+    if (error.code === '23503') return { error: 'Cannot delete product with existing orders.' }
+    return { error: error.message }
   }
 
   revalidatePath('/management')

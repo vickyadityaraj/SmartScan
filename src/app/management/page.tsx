@@ -7,13 +7,15 @@ import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { toast } from 'sonner'
 import Link from 'next/link'
-import { getProducts, updateProductStock } from './actions'
-import { Package, Plus, Search, Loader2, AlertCircle, ShoppingCart } from 'lucide-react'
+import { getProducts, updateProductStock, deleteProduct } from './actions'
+import { Package, Plus, Search, Loader2, AlertCircle, ShoppingCart, Scan, X, Trash2 } from 'lucide-react'
+import { Scanner } from '@/components/scanner'
 
 export default function ManagementPage() {
   const [products, setProducts] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
+  const [showScanner, setShowScanner] = useState(false)
 
   useEffect(() => {
     fetchProducts()
@@ -33,6 +35,18 @@ export default function ManagementPage() {
       toast.success('Stock updated')
     } else {
       toast.error(res.error || 'Failed to update stock')
+    }
+  }
+
+  async function handleProductDelete(id: string) {
+    if (!confirm('Are you sure you want to delete this product?')) return
+    
+    const res = await deleteProduct(id)
+    if (res.success) {
+      setProducts(products.filter(p => p.id !== id))
+      toast.success('Product removed from catalog')
+    } else {
+      toast.error(res.error || 'Failed to delete product')
     }
   }
 
@@ -99,14 +113,46 @@ export default function ManagementPage() {
         </Card>
       </div>
 
-      <div className="relative">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-zinc-400" />
-        <Input 
-          placeholder="Search items by name or barcode..." 
-          className="pl-12 h-14 text-lg bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800 shadow-sm focus:ring-primary"
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-        />
+      <div className="space-y-4">
+        <div className="relative group">
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-zinc-400 group-focus-within:text-primary transition-colors" />
+          <Input 
+            placeholder="Search items by name or barcode..." 
+            className="pl-12 pr-44 h-16 text-lg bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800 shadow-xl shadow-black/5 rounded-2xl focus:ring-2 focus:ring-primary/20 transition-all"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+          />
+          <div className="absolute right-3 top-1/2 -translate-y-1/2 flex gap-2">
+            {search && (
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                onClick={() => setSearch('')}
+                className="h-10 w-10 p-0 text-zinc-400 hover:text-zinc-600"
+              >
+                <X className="h-5 w-5" />
+              </Button>
+            )}
+            <Button 
+              onClick={() => setShowScanner(!showScanner)}
+              variant={showScanner ? "default" : "secondary"}
+              className="h-10 rounded-xl px-4 font-bold text-[10px] uppercase tracking-widest gap-2"
+            >
+              {showScanner ? <X className="h-4 w-4" /> : <Scan className="h-4 w-4" />}
+              {showScanner ? "Close" : "Scan to Search"}
+            </Button>
+          </div>
+        </div>
+
+        {showScanner && (
+          <div className="max-w-xl mx-auto animate-in slide-in-from-top-4 duration-300">
+            <Scanner onScan={(text) => {
+              setSearch(text)
+              setShowScanner(false)
+              toast.success(`Filtering for: ${text}`)
+            }} />
+          </div>
+        )}
       </div>
 
       {loading ? (
@@ -124,15 +170,25 @@ export default function ManagementPage() {
                 ) : (
                   <div className="flex items-center justify-center h-full text-zinc-400 italic text-sm">No image available</div>
                 )}
-                <div className="absolute top-3 right-3">
+                <div className="absolute top-3 right-3 flex gap-2">
                   <Badge variant={p.stock < 10 ? "destructive" : "secondary"} className="shadow-lg backdrop-blur-md">
                     {p.stock} in stock
                   </Badge>
+                  <Button 
+                    variant="destructive" 
+                    size="icon" 
+                    className="h-7 w-7 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                    onClick={() => handleProductDelete(p.id)}
+                  >
+                    <Trash2 className="h-3.5 w-3.5" />
+                  </Button>
                 </div>
               </div>
               <CardHeader className="pb-2">
-                <CardTitle className="text-xl">{p.name}</CardTitle>
-                <CardDescription className="font-mono text-xs">{p.barcode}</CardDescription>
+                <CardTitle className="text-xl flex justify-between items-center gap-2">
+                  <span className="truncate">{p.name}</span>
+                </CardTitle>
+                <CardDescription className="font-mono text-xs truncate bg-zinc-100 dark:bg-zinc-900 p-1 rounded inline-block w-fit">{p.barcode}</CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="flex justify-between items-center mb-6">
@@ -146,6 +202,17 @@ export default function ManagementPage() {
               </CardContent>
             </Card>
           ))}
+
+          {filteredProducts.length === 0 && (
+            <div className="col-span-full flex flex-col items-center justify-center py-20 bg-zinc-50 dark:bg-zinc-900/50 rounded-3xl border-2 border-dashed border-zinc-200 dark:border-zinc-800">
+              <div className="p-4 bg-zinc-200 dark:bg-zinc-800 rounded-full mb-4">
+                <Search className="h-10 w-10 text-zinc-400" />
+              </div>
+              <h3 className="text-xl font-bold">No products found</h3>
+              <p className="text-zinc-500 mb-6">We couldn't find anything matching "{search}"</p>
+              <Button onClick={() => setSearch('')} variant="outline" className="rounded-xl">Clear search filters</Button>
+            </div>
+          )}
         </div>
       )}
     </div>

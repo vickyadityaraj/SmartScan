@@ -1,6 +1,6 @@
 'use server'
 
-import { createClient } from '@/lib/supabase/server'
+import { createClient, createAdminClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { getSession } from '@/lib/auth'
 import bcrypt from 'bcryptjs'
@@ -11,7 +11,7 @@ export async function getAdminAnalytics() {
     return { error: 'Unauthorized' }
   }
 
-  const supabase = await createClient()
+  const supabase = await createAdminClient()
 
   // Transactions metrics
   const { data: orders, error: ordersError } = await supabase
@@ -63,7 +63,7 @@ export async function createInternalUser(formData: FormData) {
       return { error: 'Password must be at least 6 characters.' }
     }
 
-    const supabase = await createClient()
+    const supabase = await createAdminClient()
 
     // 1. Hash the temporary password
     const passwordHash = await bcrypt.hash(password, 10)
@@ -97,7 +97,7 @@ export async function getUsersList() {
     return { data: [], error: 'Unauthorized' }
   }
 
-  const supabase = await createClient()
+  const supabase = await createAdminClient()
   
   const { data, error } = await supabase
     .from('users')
@@ -118,7 +118,7 @@ export async function deleteUserAction(id: string) {
       return { error: 'Unauthorized. Admins only.' }
     }
 
-    const supabase = await createClient()
+    const supabase = await createAdminClient()
 
     // Delete user from directory
     const { error } = await supabase

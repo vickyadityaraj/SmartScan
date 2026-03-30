@@ -66,9 +66,10 @@ export function ProfileDialog({ children }: { children: React.ReactElement }) {
 
   async function handleManualUpdate(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
+    const form = e.currentTarget
     setUpdatingManual(true)
     
-    const formData = new FormData(e.currentTarget)
+    const formData = new FormData(form)
     const res = await updatePasswordAction(formData)
     
     setUpdatingManual(false)
@@ -77,7 +78,7 @@ export function ProfileDialog({ children }: { children: React.ReactElement }) {
       toast.error(res.error)
     } else {
       toast.success('Password updated successfully!')
-      e.currentTarget.reset()
+      form.reset()
     }
   }
 

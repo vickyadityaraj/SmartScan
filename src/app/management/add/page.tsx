@@ -8,11 +8,14 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { toast } from 'sonner'
 import { addProduct } from '../actions'
-import { Loader2, PackagePlus, ArrowLeft, Image as ImageIcon, Barcode, DollarSign, Weight } from 'lucide-react'
+import { Loader2, PackagePlus, ArrowLeft, Image as ImageIcon, Barcode, DollarSign, Weight, Scan, X } from 'lucide-react'
 import Link from 'next/link'
+import { Scanner } from '@/components/scanner'
 
 export default function AddProductPage() {
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [showScanner, setShowScanner] = useState(false)
+  const [barcode, setBarcode] = useState('')
   const [preview, setPreview] = useState<string | null>(null)
   const router = useRouter()
 
@@ -71,11 +74,45 @@ export default function AddProductPage() {
                   <Input id="name" name="name" required placeholder="Luxury Chocolate" className="pl-10 h-11 bg-zinc-50/50 dark:bg-zinc-900/50" />
                 </div>
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="barcode" className="text-xs uppercase tracking-widest font-bold text-zinc-500">Barcode / SKU</Label>
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="barcode" className="text-xs uppercase tracking-widest font-bold text-zinc-500">Barcode / SKU</Label>
+                  <Button 
+                    type="button" 
+                    variant="outline" 
+                    size="sm" 
+                    onClick={() => setShowScanner(!showScanner)}
+                    className="h-8 text-[10px] font-bold uppercase tracking-widest border-primary/20 hover:bg-primary/5 text-primary"
+                  >
+                    {showScanner ? <X className="mr-2 h-3 w-3" /> : <Scan className="mr-2 h-3 w-3" />}
+                    {showScanner ? 'Close Scanner' : 'Scan Barcode'}
+                  </Button>
+                </div>
+
+                {showScanner && (
+                  <div className="animate-in fade-in zoom-in-95 duration-300">
+                    <Scanner onScan={(text) => {
+                      setBarcode(text)
+                      setShowScanner(false)
+                      toast.success('Barcode detected: ' + text)
+                    }} />
+                  </div>
+                )}
+
                 <div className="relative">
                   <Barcode className="absolute left-3 top-3 h-4 w-4 text-zinc-400" />
-                  <Input id="barcode" name="barcode" required placeholder="750123456789" className="pl-10 h-11 bg-zinc-50/50 dark:bg-zinc-900/50" />
+                  <Input 
+                    id="barcode" 
+                    name="barcode" 
+                    required 
+                    value={barcode}
+                    onChange={(e) => setBarcode(e.target.value)}
+                    placeholder="750123456789" 
+                    className="pl-10 h-11 bg-zinc-50/50 dark:bg-zinc-900/50" 
+                  />
+                  {!showScanner && (
+                     <p className="text-[10px] text-zinc-400 mt-1 italic">Scan or enter digits manually</p>
+                  )}
                 </div>
               </div>
             </div>

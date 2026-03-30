@@ -1,6 +1,6 @@
 'use server'
 
-import { createClient } from '@/lib/supabase/server'
+import { createClient, createAdminClient } from '@/lib/supabase/server'
 import { createChallenge, verifyChallenge, createSession } from '@/lib/auth'
 import { sendOtpEmail } from '@/lib/mailer'
 import bcrypt from 'bcryptjs'
@@ -19,7 +19,7 @@ export async function signupAction(formData: FormData) {
     return { error: 'Please fill in all fields' }
   }
 
-  const supabase = await createClient()
+  const supabase = await createAdminClient()
 
   // 1. Check if user already exists
   const { data: existingUser } = await supabase
@@ -71,7 +71,7 @@ export async function verifyOtpAction(formData: FormData) {
   }
 
   const { email, name, passwordHash } = challenge as { email: string; name: string; passwordHash: string }
-  const supabase = await createClient()
+  const supabase = await createAdminClient()
 
   // 2. Upsert user in database now that email is verified
   // We use upsert to handle both new signups and users migrating to password-login
@@ -109,7 +109,7 @@ export async function loginAction(formData: FormData) {
     return { error: 'Please enter email and password' }
   }
 
-  const supabase = await createClient()
+  const supabase = await createAdminClient()
   
   const { data: user, error } = await supabase
     .from('users')
@@ -152,7 +152,7 @@ export async function forgotPasswordAction(formData: FormData) {
   const email = formData.get('email') as string
   if (!email) return { error: 'Please enter your email address' }
 
-  const supabase = await createClient()
+  const supabase = await createAdminClient()
   const { data: user } = await supabase
     .from('users')
     .select('id')
@@ -203,7 +203,7 @@ export async function resetPasswordAction(formData: FormData) {
     return { error: 'Password must be at least 6 characters' }
   }
 
-  const supabase = await createClient()
+  const supabase = await createAdminClient()
   const passwordHash = await bcrypt.hash(password, 10)
 
   const { error } = await supabase
@@ -235,7 +235,7 @@ export async function updatePasswordAction(formData: FormData) {
   const session = await getSession()
   if (!session) return { error: 'Unauthorized' }
 
-  const supabase = await createClient()
+  const supabase = await createAdminClient()
   const { data: user } = await supabase
     .from('users')
     .select('password_hash')
@@ -265,7 +265,7 @@ export async function getUserProfileAction() {
   const session = await getSession()
   if (!session) return null
 
-  const supabase = await createClient()
+  const supabase = await createAdminClient()
   const { data: user } = await supabase
     .from('users')
     .select('name, email, role')

@@ -19,15 +19,27 @@ CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 -- 1. Users Table
 -- ==========================================
 CREATE TABLE "public"."users" (
-    "id" UUID PRIMARY KEY REFERENCES "auth"."users"("id") ON DELETE CASCADE,
+    "id" UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     "name" TEXT NOT NULL,
     "email" TEXT NOT NULL UNIQUE,
     "role" user_role NOT NULL DEFAULT 'customer',
+    "password_hash" TEXT, -- Added for custom auth
     "created_at" TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
 );
 
 -- RLS Policies for Users
 ALTER TABLE "public"."users" ENABLE ROW LEVEL SECURITY;
+
+-- Helper for non-recursive admin checks
+CREATE OR REPLACE FUNCTION public.is_admin() 
+RETURNS boolean AS $$
+BEGIN
+  RETURN EXISTS (
+    SELECT 1 FROM public.users 
+    WHERE id = auth.uid() AND role = 'admin'
+  );
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
 
 CREATE POLICY "Users can view their own profile" 
 ON "public"."users" FOR SELECT 
@@ -35,32 +47,7 @@ USING (auth.uid() = id);
 
 CREATE POLICY "Admins can view and manage all users" 
 ON "public"."users" FOR ALL 
-USING (
-  EXISTS (
-    SELECT 1 FROM "public"."users" WHERE id = auth.uid() AND role = 'admin'
-  )
-);
-
--- Function to handle new user registration automatically
-CREATE OR REPLACE FUNCTION public.handle_new_user() 
-RETURNS TRIGGER AS $$
-BEGIN
-  INSERT INTO public.users (id, name, email, role)
-  VALUES (
-    new.id, 
-    new.raw_user_meta_data->>'name', 
-    new.email, 
-    COALESCE((new.raw_user_meta_data->>'role')::user_role, 'customer')
-  );
-  RETURN new;
-END;
-$$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public;
-
--- Trigger for new user
-DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
-CREATE TRIGGER on_auth_user_created
-  AFTER INSERT ON auth.users
-  FOR EACH ROW EXECUTE PROCEDURE public.handle_new_user();
+USING (is_admin());
 
 
 -- ==========================================

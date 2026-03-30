@@ -15,7 +15,7 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "Smart Scan",
-  description: "Retail checkout and verification portal.",
+  description: "Smart retail checkout system.",
 };
 
 export default function RootLayout({
